@@ -1,46 +1,49 @@
 import { useState, useEffect } from "react";
 import './App.css';
+import { useContext } from "react";
+import { counterContext } from "./Context/Counter";
+import { CartContext } from "./Context/Cart";
 
 function App() {
-  const [data, setData] = useState([]);
-  const [cart, setCart] = useState([]);
+
+  const counter = useContext(counterContext)
+  const cart = useContext(CartContext)
+
 
   useEffect(() => {
     fetch('https://fakestoreapi.com/products')
       .then(response => response.json())
-      .then(data => setData(data))
+      .then(data => counter.setData(data))
       .catch(error => console.error('Error fetching data:', error));
   }, []);
-  console.log(data)
-  console.log(cart)
 
   const addtoCart = (item) => {
-    const existingItem = cart.find(cartItem => 
+    const existingItem = cart.cartdata.find(cartItem => 
     cartItem.id === item.id);
-    if (existingItem) {
+    if (existingItem) { 
         existingItem.quantity++;
     } else {
-        cart.push({ ...item, quantity: 1 });
+        cart.cartdata.push({ ...item, quantity: 1 });
         
     }
 
-    setCart([...cart]);
+    cart.setCart([...cart.cartdata]);
 };
 
   const removeFromCart = (id) => {
-    setCart(cart.filter(item =>
+    cart.setCart(cart.cartdata.filter(item =>
    item.id !== id)); 
   };
 
   const incrementQuantity = (id) => {
-    const updatedCart = [...cart]; 
+    const updatedCart = [...cart.cartdata]; 
     const item = updatedCart.find(item => 
     item.id === id); 
     item.quantity++;
-    setCart(updatedCart) 
+    cart.setCart(updatedCart) 
   };
   const decrementQuantity = (id) => {
-    const updatedCart = [...cart];
+    const updatedCart = [...cart.cartdata];
     const item = updatedCart.find(item => 
     item.id === id);
     if (item) {
@@ -51,12 +54,12 @@ function App() {
       removeFromCart(id); 
     }
   
-    setCart(updatedCart); 
+    cart.setCart(updatedCart); 
   };
   return (
     <>
       <ul className="parent">
-        {data.map((dataItem) => (
+        {counter.data.map((dataItem) => (
           <div key={dataItem.id} className="container">
             <img className="imageSize" src={dataItem.image} alt={dataItem.title} />
             <li>{dataItem.title}</li>
@@ -69,7 +72,7 @@ function App() {
 
       <h1>This is Cart Section</h1>
       <ul>
-        {cart.map((cartitem) => (
+        {cart.cartdata.map((cartitem) => (
           <div key={cartitem.id} className="cart-item"> 
             <li className="cart-title">{cartitem.title}</li>
             <button onClick={() => incrementQuantity(cartitem.id)}>+</button>
@@ -79,7 +82,7 @@ function App() {
             <button onClick={() => removeFromCart(cartitem.id)}>Remove</button>
           </div>
         ))}
-      </ul>
+       </ul>
     </>
   );
 }
